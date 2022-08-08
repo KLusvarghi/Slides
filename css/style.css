@@ -1,0 +1,31 @@
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.slide-wrapper {
+  overflow: hidden; /* Tirando assim a barra horizntal */
+}
+
+.slide {
+  display: flex;
+}
+
+.slide li {
+  flex-shrink: 0; /* Para que ele não diminua para caber na tela, gerando a barra horizontal */
+  width: 80vw;
+  max-width: 800px;
+  margin: 0 20px;
+}
+
+/* Animação do slide */
+
+.slide {
+  transform: translate3d()
+}
