@@ -1,7 +1,7 @@
 // lembrando que o debounce serve para que ative uma quantidade menor o evento desejado, conforme o tempo passado
 import debounce from './debounce.js' // tendo que ativar o debounce sempre quando fazemos o bind
 
-export default class Slide {
+export class Slide {
   constructor(slide, wrapper) {
     this.slide = document.querySelector(slide);
     this.wrapper = document.querySelector(wrapper);
@@ -177,6 +177,9 @@ export default class Slide {
     this.onMove = this.onMove.bind(this);
     this.onEnd = this.onEnd.bind(this);
     this.onResize = debounce(this.onResize.bind(this), 200) // tendo que ativar o debounce sempre quando fazemos o bind
+
+    this.activePrevSlide = this.activePrevSlide.bind(this);
+    this.activeNextSlide = this.activeNextSlide.bind(this);
   }
 
   init() {
@@ -185,6 +188,25 @@ export default class Slide {
     this.addSlideEvents();
     this.slidesConfig();
     this.addResizeEvent()
+    this.changeSlide(0) //ativando um slide inicial
     return this;
   }
+}
+
+
+
+// criando outra classe que extendo da classe "slide", possuindo os mesmo métodos e atributos
+export class Slidenav extends Slide {
+
+    addArrow(prev, next) {
+      this.prevElement = document.querySelector(prev)
+      this.nextElement = document.querySelector(next)
+      this.addArrowEvent()
+    }
+
+
+    addArrowEvent(){
+      this.prevElement.addEventListener("click", this.activePrevSlide)
+      this.nextElement.addEventListener("click", this.activeNextSlide)
+    }
 }
