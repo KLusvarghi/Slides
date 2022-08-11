@@ -27,10 +27,18 @@ export default class Slide {
 
   // Método ao iniciar
   onStart(event) {
-    event.preventDefault()
+    let movetype;
+    if(event.type === 'mousedown') {//verifica se o evento é de mousedown, sneod que poderia fazer um método para mosedown e um para thouchmove
+      event.preventDefault()
+      // sendo esse um valor fixo
+      this.dist.startX = event.clientX // sendo o clientX a posição no eixo X que clicamos 
+      movetype = 'mousemove'
+    } else {
+      // console.log(event) // em changedTouches ele mosta a quantidade de dedos clicados, sendo a nossa preferencia o primeiro dedo, index 0
 
-    // sendo esse um valor fixo
-    this.dist.startX = event.clientX // sendo o clientX a posição no eixo X que clicamos 
+      this.dist.startX = event.changedTouches[0].clientX //pegando o primeiro toque no slide, pegando a posição no eixo X
+      movetype = 'touchmove'
+    }
 
 
     // console.log(this) // sem fazer o "bind" o this irá me retornar o que é o "slide-wraper":
@@ -38,20 +46,22 @@ export default class Slide {
     // Porém eu quero que o this seja referencia ao meu Objeto, ao slide em si, e par aisso fazemos o "bind"
 
 
-    this.wrapper.addEventListener('mousemove', this.onMove) // para que o evento só seja acionado quando clicarmos pela priemira vez, ele tem que ser adiconado neste método, que tbm só será inicializado quando ouver um evento de "mousedown"
+    this.wrapper.addEventListener(movetype, this.onMove) // para que o evento só seja acionado quando clicarmos pela priemira vez, ele tem que ser adiconado neste método, que tbm só será inicializado quando ouver um evento de "mousedown"
 
     //console.log('mousedown') //sendo adicioanda apenas quando seguramos
   }
 
   // método para o evento de mouse move
   onMove(event){
-    const finalPosition = this.updatePosition(event.clientX)
+    const pointerPosition = (event.type === 'mousemove') ? event.clientX : event.changedTouches[0].clientX; //fazendo uma verificação, para que o touchmove funcione tem que ser colocado no "onMove", fazendo assim uma verificação ternária
+    const finalPosition = this.updatePosition(pointerPosition)
     this.moveSlide(finalPosition);
   }
 
   // método para remover o evento ao fim delegated
   onEnd(event){
-    this.wrapper.removeEventListener('mousemove', this.onMove);
+    const moveType = (event.type === 'mouseup') ? 'mousemove' : 'touchmove'; // caso o evento seja de "mouseup", que no caso é de emulador, ele terá o evento de "mousemove"
+    this.wrapper.removeEventListener(moveType, this.onMove); // assim ele irá remove ou adicionar baseado nessa parte
     this.dist.finalPosition = this.dist.movePosition; //quando a pessoa tirar o mouse de cima ele irá amazernar em "finalPosition"
   }
 
@@ -59,7 +69,9 @@ export default class Slide {
   // método para adicionar os evetos ao slide
   addSlideEvents() {
     this.wrapper.addEventListener('mousedown', this.onStart)
+    this.wrapper.addEventListener('touchstart', this.onStart) //evento para mobile
     this.wrapper.addEventListener('mouseup', this.onEnd)
+    this.wrapper.addEventListener('touchend', this.onEnd) //evento para mobile
   }
 
 
