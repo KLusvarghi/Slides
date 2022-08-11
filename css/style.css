@@ -22,6 +22,13 @@ img {
   width: 80vw;
   max-width: 800px;
   margin: 0 20px;
+
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0, 2px, 4px, rgba(0, 0, 0, 0.4);
+  opacity: .8;
+  transform: scale(.8); /* Assim o slide ficando menor*/
+  transition: .4s;
 }
 
 /* Animação do slide */
@@ -29,3 +36,14 @@ img {
 /* .slide {
   transform: translate3d()
 } */
+
+
+.slide li.active{
+  opacity: 1;
+  transform: scale(1); /* assim o slide fica na posição normal*/
+}
+
+/* por performace, dizemos o que irá mudar */
+.slide:hover {
+  will-change:transition;
+}
