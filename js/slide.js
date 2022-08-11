@@ -11,6 +11,13 @@ export default class Slide {
     }
   }
 
+  // metordo para adicionar o evento de transition quando o mouse for largadores
+  transition(active){
+    this.slide.style.transition = active ? 'transform .3s' : ''; // se 
+  }
+
+
+
   // método responsavel por fazer a animação  
   moveSlide(distX) {
     this.dist.movePosition = distX; // criadno um novo atributo "movePosition"
@@ -49,6 +56,9 @@ export default class Slide {
     this.wrapper.addEventListener(movetype, this.onMove) // para que o evento só seja acionado quando clicarmos pela priemira vez, ele tem que ser adiconado neste método, que tbm só será inicializado quando ouver um evento de "mousedown"
 
     //console.log('mousedown') //sendo adicioanda apenas quando seguramos
+
+
+    this.transition(false) // quando for começar o meu evento eu deixo ele como falso
   }
 
   // método para o evento de mouse move
@@ -63,6 +73,19 @@ export default class Slide {
     const moveType = (event.type === 'mouseup') ? 'mousemove' : 'touchmove'; // caso o evento seja de "mouseup", que no caso é de emulador, ele terá o evento de "mousemove"
     this.wrapper.removeEventListener(moveType, this.onMove); // assim ele irá remove ou adicionar baseado nessa parte
     this.dist.finalPosition = this.dist.movePosition; //quando a pessoa tirar o mouse de cima ele irá amazernar em "finalPosition"
+    this.transition(true) // ativando a transition apenas quando chegar ao final porem antes de mudar o slide
+    this.changeSlideOnEnd()
+  }
+
+  // método para quando passar o slide ele já centralizar no proximo
+  changeSlideOnEnd() { 
+    if(this.dist.movement > 120 && this.index.next !== undefined){ // "this.dist.moviemnt" me retorna o valor da distancia que eu percorri com o mouse, porem tendo que verificar se o proxinmo slide não é undefined
+      this.activeNextSlide()
+    } else if (this.dist.movement < -120 && this.index.prev !== undefined){
+      this.activePrevSlide()
+    } else{
+      this.changeSlide(this.index.active) //caso não seja nenhum deles, ele  ativ ao slide atual
+    }
   }
 
 
@@ -122,8 +145,24 @@ export default class Slide {
     this.dist.finalPosition = activeSlide.position // passando para a propriedade do objeto o valor final do slide
   }
 
+
+  // navegação Next and Prev
+
+  activePrevSlide() {
+    if ( this.index.prev !== undefined){ //se o slide anterior for diferente de "undefined"
+      this.changeSlide(this.index.prev)
+    }
+  }
+
+  activeNextSlide() {
+    if ( this.index.next !== undefined){ //se o slide posterior for diferente de "undefined"
+      this.changeSlide(this.index.next)
+    }
+  }
+
   init(){
     this.bindEvents()
+    this.transition(true)
     this.addSlideEvents()
     this.slidesConfig()
     return this
