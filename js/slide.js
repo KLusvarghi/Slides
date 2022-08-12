@@ -201,7 +201,7 @@ export class Slide {
 }
 
 // criando outra classe que extendo da classe "slide", possuindo os mesmo métodos e atributos
-export class SlideNav extends Slide {
+export default class SlideNav extends Slide {
   constructor(slide, wrapper) { // podendo usar o "...args" assim, que ee irá desestruturar e enteder
     super(slide, wrapper); //quando usamos o contrutor de uma classe estendida, temos que usar o "super()" para puxar os argumentos da classe super
     this.bindControlEvents() // assim que iniciar a função ele fará o bind
