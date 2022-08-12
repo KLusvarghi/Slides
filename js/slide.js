@@ -1,5 +1,5 @@
 // lembrando que o debounce serve para que ative uma quantidade menor o evento desejado, conforme o tempo passado
-import debounce from './debounce.js' // tendo que ativar o debounce sempre quando fazemos o bind
+import debounce from "./debounce.js"; // tendo que ativar o debounce sempre quando fazemos o bind
 
 export class Slide {
   constructor(slide, wrapper) {
@@ -134,6 +134,11 @@ export class Slide {
     this.slidesIndexNav(index);
     this.dist.finalPosition = activeSlide.position; // passando para a propriedade do objeto o valor final do slide
     this.chengeActiveClass();
+    
+
+    // toda vez que mudar o slide ele irá emetir esse evento "this.changeEvent"
+    // passando o evento para o me "wrapper"
+    this.wrapper.dispatchEvent(this.changeEvent); // então toda vez que o método "changeSlide" for chamado, ele irá disparar o evento (dispatchEvent), de "this.changeEvent"
   }
 
   chengeActiveClass() {
@@ -160,15 +165,16 @@ export class Slide {
   }
 
   // quando acontece o risize ele acaba distorcendo os efeitos. Sendo o "Riseze" um evento de quando mexemos a tela
-  onResize(){
-    setTimeout(() => { // colcoando dentro do etTiemout pq mesmo resetando as configurrações ele buga as vez, então após o resize ele irá esperar 1 segundo e ai sim resetar as configurações
-      this.slidesConfig() // resetando as configurações quando mover a tela
+  onResize() {
+    setTimeout(() => {
+      // colcoando dentro do etTiemout pq mesmo resetando as configurrações ele buga as vez, então após o resize ele irá esperar 1 segundo e ai sim resetar as configurações
+      this.slidesConfig(); // resetando as configurações quando mover a tela
       this.changeSlide(this.index.active); // mudando para o slide ativo
-    }, 1000)
+    }, 1000);
   }
 
-  addResizeEvent(){
-    window.addEventListener('resize', this.onResize)
+  addResizeEvent() {
+    window.addEventListener("resize", this.onResize);
   }
 
   // como será necessario fazer o bind varias vezes, temos um método espécifico para isso
@@ -176,10 +182,11 @@ export class Slide {
     this.onStart = this.onStart.bind(this);
     this.onMove = this.onMove.bind(this);
     this.onEnd = this.onEnd.bind(this);
-    this.onResize = debounce(this.onResize.bind(this), 200) // tendo que ativar o debounce sempre quando fazemos o bind
 
     this.activePrevSlide = this.activePrevSlide.bind(this);
     this.activeNextSlide = this.activeNextSlide.bind(this);
+
+    this.onResize = debounce(this.onResize.bind(this), 200); // tendo que ativar o debounce sempre quando fazemos o bind
   }
 
   init() {
@@ -187,26 +194,90 @@ export class Slide {
     this.transition(true);
     this.addSlideEvents();
     this.slidesConfig();
-    this.addResizeEvent()
-    this.changeSlide(0) //ativando um slide inicial
+    this.addResizeEvent();
+    this.changeSlide(0); //ativando um slide inicial
     return this;
   }
 }
 
-
-
 // criando outra classe que extendo da classe "slide", possuindo os mesmo métodos e atributos
-export class Slidenav extends Slide {
+export class SlideNav extends Slide {
+  constructor(slide, wrapper) { // podendo usar o "...args" assim, que ee irá desestruturar e enteder
+    super(slide, wrapper); //quando usamos o contrutor de uma classe estendida, temos que usar o "super()" para puxar os argumentos da classe super
+    this.bindControlEvents() // assim que iniciar a função ele fará o bind
 
-    addArrow(prev, next) {
-      this.prevElement = document.querySelector(prev)
-      this.nextElement = document.querySelector(next)
-      this.addArrowEvent()
-    }
+    // criando um EVENTO próprio
+    this.changeEvent = new Event('changeEvent') // passando como parametro o nome que ele terá
+  }
+  
+  addArrow(prev, next) {
+    this.prevElement = document.querySelector(prev);
+    this.nextElement = document.querySelector(next);
+    this.addArrowEvent();
+  }
+
+  addArrowEvent() {
+    this.prevElement.addEventListener("click", this.activePrevSlide);
+    this.nextElement.addEventListener("click", this.activeNextSlide);
+  }
+
+  createControl() {
+    const control = document.createElement("ul");
+    control.dataset.control = "slide"; // adicioando um "data" nele para poder estilzia-lo, chamando "data-control"
+
+    this.slideArray.forEach((item, index) => {
+      // percorrendo cada slide
+      control.innerHTML += `<li><a href="#slide${index + 1}">${
+        index + 1
+      }</a></li>`;
+    });
+    // console.log(control)
+    this.wrapper.appendChild(control); //adicionando logo abaixo do "wrapper" a lista de li que criamos
+    return control;
+  }
+
+  // evento para mudar de slide ao clicar na bolinha
+  eventControl(item, index) {
+    item.addEventListener("click", (event) => {
+      // não precisando fazer um callback e chamando outra função, podendo usar uma arrowFunction mesmo
+      event.preventDefault(); // previnindo o evento padrão
+      this.changeSlide(index); //chamando o método que irá mudar o slide passando o index, sendo que cada bolinha já tem um index pré definido criando no método "createControl"
+    });
 
 
-    addArrowEvent(){
-      this.prevElement.addEventListener("click", this.activePrevSlide)
-      this.nextElement.addEventListener("click", this.activeNextSlide)
-    }
+    // e após o evento ter sido disparado ele aotomaticamente entra no método e adicioan um evento ao "wrapper", assim, chamdno o "activeControlItem" que fará mudar a cor da bolinha conforme o index
+    // toda vez que mudar o slide ele irá adicionar esse evento ao wrapper
+    this.wrapper.addEventListener('changeEvent', this.activeControlItem) // como está passando como callbackm, tem que se fazer o bind
+  }
+
+  // método para adicionar classe de ativo ao item que estiver ativo no momento
+  activeControlItem()  {
+    this.controlArray.forEach((item) => item.classList.remove(this.activeClass)) // fazendo um looping pelos itens e removendo os itens ativos antes de ativar outro
+    this.controlArray[this.index.active].classList.add(this.activeClass)
+  }
+
+
+  addControl(customControl) {
+    // dando a opção ao usuário de passar o controle
+    this.control =
+      document.querySelector(customControl) || this.createControl(); //caso não passe nada como parametro, o control terá o valor como o retorno do método "createControl"
+    // console.log(this.control) //sendo o "this.control" a ul que contem as li'saber
+
+    // criando uma array com os itens dentro de "control" para facilitar a manipulação dos items
+    this.controlArray = [...this.control.children]; // desestruturando os filhos do "control", que são as li's, me retornando Array com os li's
+    // console.log(this.controlArray)
+
+    // adicioando o evento para que a bolinha fica marcado logo de inicio de
+    this.activeControlItem()
+
+    this.controlArray.forEach(this.eventControl); //podendo passar dessa maneira por ser igual ao de baixo, por que o callback vai entender
+    // this.controlArray.forEach((item, index) => this.eventControl(item, index))
+  }
+
+  // sem fazer o bind, ele dará que o "changeSlide" não foi definido, por que o this da linha 233 " this.changeSlide(index)", está fazendo referencia a esse this - "this.controlArray"
+  bindControlEvents() {
+    this.eventControl = this.eventControl.bind(this);
+    this.activeControlItem = this.activeControlItem.bind(this);
+    
+  }
 }
