@@ -47,3 +47,28 @@ img {
 .slide:hover {
   will-change:transition;
 }
+
+
+/*  estilização da navegação por imagem */
+
+[data-control="slide"] {
+  display: flex;
+  justify-content: center;
+  margin-top:20px
+}
+
+
+[data-control="slide"] li a {
+  display: block;
+  width:25px;
+  height: 25px;
+  background-color: #FB5;
+  border-radius:50%;
+  overflow: hidden; /* para que o texto não apareã*/
+  text-indent: -9999px; /* para mover o texto e ele sair da tela*/
+  margin: 5px;
+}
+
+[data-control="slide"] li.active a, [data-control="slide"] li a:hover{
+  background-color: #E54;
+}
